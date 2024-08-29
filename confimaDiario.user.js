@@ -8,8 +8,8 @@
 // @require      https://code.jquery.com/jquery-3.6.0.min.js
 // @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
 // @grant        none
-// @updateURL    https://github.com/lksoumon/confirmaDiario/raw/main/confimaDiario.user.json
-// @downloadURL  https://github.com/lksoumon/confirmaDiario/raw/main/confimaDiario.user.json
+// @updateURL    https://github.com/lksoumon/confirmaDiario/raw/main/confimaDiario.user.js
+// @downloadURL  https://github.com/lksoumon/confirmaDiario/raw/main/confimaDiario.user.js
 // ==/UserScript==
 //estilo dos botões
 var styleSCT = document.createElement('style');
