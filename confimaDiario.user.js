@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Confirmador de diario GED
 // @namespace    http://tampermonkey.net/
-// @version      1.4
+// @version      1.42
 // @description  Confirma as presenças dos alunos no sistema GED-Sigeduca
 // @author       Lucas de Souza Monteiro
 // @match        http://sigeduca.seduc.mt.gov.br/ged/hwmfinalizaperiodofrequencia.aspx?HWGedLancarAvaliacao.aspx*
@@ -240,6 +240,161 @@ function addCopyBtn(ele,v) {
         addCopyBtn(document.getElementById("TABELASELECAO"),bimes[i]);
     }
 
+    async function waitForNotificationHidden4(bima,todosAte = 1) {
+        var output = [['Nome - cod','turma','disciplina','lançou nota?','bimestre']];
+        //var bb = bima;
+        var controle = 1;
 
+        if(todosAte == 0){
+            controle = bima;
+        }
+        //const valores = Array.from(select.options).map(option => option.value);
+
+        //for (var b = controle; b <= bima; b++) { console.log(bima, controle, b, todosAte);
+        const select = document.getElementById("vGEDMATDISCAVAREF");
+
+        const opcoes = Array.from(select.options).slice(1);
+
+        for (const option of opcoes) {
+            console.log("Valor:", option.value);
+
+            let bb = option.value;
+
+            const bim = document.getElementById("vGEDMATDISCAVAREF");
+            var bimes = getSelectedValues(bim);
+            if(bimes.length == 1){bb = bimes[0];console.log(bimes[0]);}
+
+            let element = document.getElementById('vGEDMATDISCAVAREF');
+            element.value = bb;
+            const eek = document.getElementById("vAREADISCIPLINATELA");
+
+            var options = eek.options;
+
+            var selectedValues = [];
+
+            for (var k = 0; k < options.length; k++) {
+                selectedValues.push(options[k].value);
+            }
+
+
+            //var selectedValues = getSelectedValues(eek);
+            //console.log(selectedValues);
+            var iterations = selectedValues.length;
+            for (var i = 0; i < iterations; i++) {
+                console.log("Iteração", i );
+
+                selectElement('vAREADISCIPLINATELA', selectedValues[i]);
+                eek.onchange();
+
+                await sleep(500);
+                // Primeira pausa aguardando que o elemento gx_ajax_notification esteja oculto
+                while (!isNotificationHidden()) {
+                    //console.log("Aguardando ocultar...");
+                    await sleep(1000); // Pausa por 1 segundo
+                }
+
+                //console.log("Elemento gx_ajax_notification está oculto.");
+
+                // Executa as ações após a primeira pausa -----------------------
+
+                var precisa = 0;
+
+
+
+
+                (function (){
+                    document.getElementsByClassName("btnConfirmar")[0].click();
+                })();
+                await sleep(500);
+
+                // -----------------------------------------------------------------
+
+                // Segunda pausa aguardando que o elemento gx_ajax_notification esteja oculto
+                while (!isNotificationHidden()) {
+                    //console.log("Segunda pausa - Aguardando ocultar...");
+                    await sleep(1000); // Pausa por 2 segundos antes de avançar para a próxima iteração
+                }
+                //console.log("Segunda pausa - Elemento gx_ajax_notification está oculto.");
+
+                // Executa as ações após a segunda pausa -----------------------
+
+                let num = 0;
+                let tamanhoTabela = parent.frames[0].document.getElementById('GriddetalhesContainerTbl').rows.length;
+
+                for (var n = 1; n < tamanhoTabela; n++){
+                    let num = ("0000" + n).slice(-4);
+
+                    var corTexto = document.getElementById('span_vGEDALUNOM_'+num).style.color;
+                    var realizar = document.getElementById('span_vREALIZA_'+num).textContent.trim();
+                    if(corTexto == "rgb(0, 0, 0)"){
+                        realizar = "Sim";
+                    }else{
+                        realizar = "Não";
+                    }
+                    var noconf = parseInt(document.getElementById('span_vQTDFALTASN_'+num).textContent.trim())+parseInt(document.getElementById('span_vQTDPRESENCASN_'+num).textContent.trim());
+                    var confs = parseInt(document.getElementById('span_vQTDFALTAS_'+num).textContent.trim())+parseInt(document.getElementById('span_vQTDPRESENCAS_'+num).textContent.trim());
+                    //console.log(confs,noconf);
+                    //possuiLanFreq = document.getElementById('span_vALUNOPOSSUILANCFREQ_0001').textContent.trim();
+
+                    if (realizar == "Sim" && noconf == 0){
+                        //erros = erros +eek.options[eek.selectedIndex].text+" - Sem presença lançada no "+bimestre+"º bimestre;<br>  ";
+                        output.push([document.getElementById('span_vGEDALUNOM_'+num).textContent.trim(),
+                                     document.getElementById('span_vGEDALUCOD_'+num).textContent.trim(),
+                                     document.getElementById("span_vGERTURSAL").textContent.trim(),
+                                     eek.options[eek.selectedIndex].text,
+                                     "Sem presença lançada no "+bb+"º bimestre"]);
+                    }
+
+                    if (realizar == "Sim" && confs == 0 && noconf > 0){
+                        //erros = erros +eek.options[eek.selectedIndex].text+" - Nota não lançada no "+bimestre+"º bimestre;<br>  ";
+                        output.push([document.getElementById('span_vGEDALUNOM_'+num).textContent.trim(),
+                                     document.getElementById('span_vGEDALUCOD_'+num).textContent.trim(),
+                                     document.getElementById("span_vGERTURSAL").textContent.trim(),
+                                     eek.options[eek.selectedIndex].text,
+                                     "Nota/conceito não lançado no "+bb+"º bimestre"]);
+                    }
+                }
+
+
+                // -----------------------------------------------------------------
+            }
+
+
+
+
+
+
+        }
+
+        //console.log("Fim do loop");
+        arrayToHtmlTable(output);
+
+    }
+
+    function doc_keyUp(e) {
+
+        if (e.code === 'Digit1' && e.shiftKey) {
+            console.log('foi');
+            waitForNotificationHidden4(1);
+        }
+        if (e.code === 'Digit2' && e.shiftKey) {
+            console.log('foi');
+            waitForNotificationHidden4(2);
+        }
+        if (e.code === 'Digit3' && e.shiftKey) {
+            console.log('foi');
+            waitForNotificationHidden4(3);
+        }
+        if (e.code === 'Digit4' && e.shiftKey) {
+            console.log('foi');
+            waitForNotificationHidden4(4);
+        }
+        if (e.code === 'Digit5' && e.shiftKey) {
+            console.log('foi');
+            waitForNotificationHidden4(5);
+        }
+    }
+
+    document.addEventListener('keyup', doc_keyUp, false);
 
 })();
