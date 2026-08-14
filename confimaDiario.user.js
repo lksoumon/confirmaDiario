@@ -1,13 +1,15 @@
 // ==UserScript==
 // @name         Confirmador de diario GED
 // @namespace    http://tampermonkey.net/
-// @version      1.7
+// @version      1.70
 // @description  Confirma as presenças dos alunos no sistema GED-Sigeduca com atalhos cumulativos e AutoStart
 // @author       Lucas de Souza Monteiro
 // @match        http://sigeduca.seduc.mt.gov.br/ged/hwmfinalizaperiodofrequencia.aspx?HWGedLancarAvaliacao.aspx*
 // @require      https://code.jquery.com/jquery-3.6.0.min.js
 // @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
 // @grant        none
+// @updateURL    https://github.com/lksoumon/confirmaDiario/raw/refs/heads/main/confimaDiario.user.js
+// @downloadURL  https://github.com/lksoumon/confirmaDiario/raw/refs/heads/main/confimaDiario.user.js
 // ==/UserScript==
 
 // Estilo dos botões
